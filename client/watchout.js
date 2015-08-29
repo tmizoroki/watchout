@@ -68,10 +68,10 @@ var enemyUpdate = function(data) {
   d3enemies
   .enter()
   .append('image')
-  .attr('height', 20)
-  .attr('width', 20)
-  .attr('xlink:href', './shuriken.png')
   .attr('class', 'enemies')
+  .attr('height', 40)
+  .attr('width', 40)
+  .attr('xlink:href', './shuriken.png')
   .attr('x', function(d) { return d.x; })
   .attr('y', function(d) { return d.y; })
   .attr('r', function(d) { return d.r; })
