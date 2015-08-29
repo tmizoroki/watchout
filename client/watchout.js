@@ -16,18 +16,21 @@ var d3gameBoard =
   .attr('width', gameOptions.width)
   .attr('height', gameOptions.height)
 
-var axes = {
-  x : d3.scale.linear().domain([0,100]).range([0,gameOptions.width]),
-  y : d3.scale.linear().domain([0,100]).range([0,gameOptions.height])
-};
+// var axes = {
+//   x : d3.scale.linear().domain([0,100]).range([0,gameOptions.width]),
+//   y : d3.scale.linear().domain([0,100]).range([0,gameOptions.height])
+// };
 
 //Enemy functions and behavior
 
 var Enemy = function(id) {
   this.id = id;
-  this.x = Math.random() * 100;
-  this.y = Math.random() * 100;
+  this.x = Math.random() * 600;
+  this.y = Math.random() * 600;
+  this.r = 10;
 };
+
+ 
 
 var enemyUpdate = function(data) {
   
@@ -37,21 +40,33 @@ var enemyUpdate = function(data) {
   //UPDATE
   d3enemies
   .transition()
-  .tween('.player', function(d, i){
+  .duration(1500)
+  .tween('circles', function(d) {
+    // var x = d.x;
+    // var y = d.y;
+    var enemyR = d.r;
+
     return function() {
-      var distance =  Math.sqrt(Math.pow(Math.abs(this.x - players[0].x) ,2) + Math.pow(Math.abs(this.y - players[0].y, 2)));
-      if (distance < this.r + players[0].r) {
+      debugger;
+
+      var playerX = Number(d3.select('.player').attr('cx'));
+      var playerY = Number(d3.select('.player').attr('cy'));
+      var xDelta = Math.abs(this.__data__.x - playerX);
+      var yDelta = Math.abs(this.__data__.y - playerY);
+      var r = players[0].r + enemyR;
+      var l = Math.sqrt(Math.pow(xDelta, 2) + Math.pow(yDelta, 2));
+        // debugger;
+      if (l < r) {
         //reset score
-        gameStats.collisions++;
         gameStats.current = 0;
         d3.select('#num-collisions').data([gameStats.collisions])
         .text(function(d) { return d; });
+        return gameStats.collisions++;
       }
     }
   })
-  .duration(1500)
-  .attr('cx', function(d) { return axes.x(d.x); })
-  .attr('cy', function(d) { return axes.y(d.y); })
+  .attr('cx', function(d) { return d.x; })
+  .attr('cy', function(d) { return d.y; })
 
  
   //ENTER
@@ -59,14 +74,15 @@ var enemyUpdate = function(data) {
   .enter()
   .append('circle')
   .attr('class', 'enemies')
-  .attr('cx', function(d) { return axes.x(d.x); })
-  .attr('cy', function(d) { return axes.y(d.y); })
-  .attr('r', 10)
+  .attr('cx', function(d) { return d.x; })
+  .attr('cy', function(d) { return d.y; })
+  .attr('r', function(d) { return d.r; })
   .attr('fill', 'red')
 
   //EXIT
   d3enemies.exit().remove();
 };
+
 
 var moveEnemies = function() {
   var newEnemies = [];
@@ -81,8 +97,9 @@ var moveEnemies = function() {
 
 var Player = function(id) {
   this.id = id;
-  this.x = 50;
-  this.y = 50;
+  this.x = gameOptions.width / 2;
+  this.y = gameOptions.height / 2;
+  this.r = 10;
 };
 
 var drag = d3.behavior.drag()
@@ -102,7 +119,7 @@ var d3Player = d3gameBoard.selectAll('.player')
   .attr('class', 'player')
   .attr('cx', function(d) { return d.x; })
   .attr('cy', function(d) { return d.y; })
-  .attr('r', 10)
+  .attr('r', function(d) { return d.r; })
   .style('fill', 'blue')
   .call(drag);
 
