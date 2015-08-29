@@ -2,3 +2,14 @@
 
 /* Note: an asteroid image is included in this repo.
 Feel free to use it if you like. */
+.gameBoard {
+  padding: 40px;
+}
+
+.spinning {
+  -webkit-animation: spinning 1s linear infinite;
+}
+
+@-webkit-keyframes spinning {
+  0% { -webkit-transform: rotate(360deg);}
+}
