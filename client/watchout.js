@@ -37,6 +37,18 @@ var enemyUpdate = function(data) {
   //UPDATE
   d3enemies
   .transition()
+  .tween('.player', function(d, i){
+    return function() {
+      var distance =  Math.sqrt(Math.pow(Math.abs(this.x - players[0].x) ,2) + Math.pow(Math.abs(this.y - players[0].y, 2)));
+      if (distance < this.r + players[0].r) {
+        //reset score
+        gameStats.collisions++;
+        gameStats.current = 0;
+        d3.select('#num-collisions').data([gameStats.collisions])
+        .text(function(d) { return d; });
+      }
+    }
+  })
   .duration(1500)
   .attr('cx', function(d) { return axes.x(d.x); })
   .attr('cy', function(d) { return axes.y(d.y); })
@@ -92,9 +104,18 @@ var d3Player = d3gameBoard.selectAll('.player')
   .attr('cy', function(d) { return d.y; })
   .attr('r', 10)
   .style('fill', 'blue')
-  .call(drag)
-
+  .call(drag);
 
 setInterval(moveEnemies, 2000);
 
+setInterval(function() {
+  gameStats.current++;
+  if (gameStats.current > gameStats.high) {
+    gameStats.high = gameStats.current;
+    d3.select('#high-score').data([gameStats.high])
+    .text(function(d) { return d; });
+  }
+  d3.select('#current-score').data([gameStats.current])
+  .text(function(d) { return d; });
 
+}, 100);
