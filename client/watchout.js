@@ -21,21 +21,13 @@ var axes = {
   y : d3.scale.linear().domain([0,100]).range([0,gameOptions.height])
 };
 
+//Enemy functions and behavior
+
 var Enemy = function(id) {
   this.id = id;
   this.x = Math.random() * 100;
   this.y = Math.random() * 100;
 };
-
-var enemies = [];
-
-var Player = function() {
-  this.x = gameOptions.width / 2;
-  this.y = gameOptions.height / 2;
-};
-
-var players = [];
-players.push(new Player);
 
 var enemyUpdate = function(data) {
   
@@ -44,7 +36,8 @@ var enemyUpdate = function(data) {
 
   //UPDATE
   d3enemies
-  .transition(2000)
+  .transition()
+  .duration(1500)
   .attr('cx', function(d) { return axes.x(d.x); })
   .attr('cy', function(d) { return axes.y(d.y); })
 
@@ -63,7 +56,7 @@ var enemyUpdate = function(data) {
   d3enemies.exit().remove();
 };
 
-var play = function() {
+var moveEnemies = function() {
   var newEnemies = [];
 
   for (var i = 0; i < gameOptions.numEnemies; i++) {
@@ -72,5 +65,36 @@ var play = function() {
   enemyUpdate(newEnemies);
 };
 
+//Player functions and behavior
+
+var Player = function(id) {
+  this.id = id;
+  this.x = 50;
+  this.y = 50;
+};
+
+var drag = d3.behavior.drag()
+  .on('drag', function() { 
+    d3Player.attr('cx', d3.event.x)
+    .attr('cy', d3.event.y); 
+  });
+
+
+var players = [];
+players.push(new Player(1));
+
+var d3Player = d3gameBoard.selectAll('.player')
+  .data(players, function(d) { return d.id; })
+  .enter()
+  .append('circle')
+  .attr('class', 'player')
+  .attr('cx', function(d) { return d.x; })
+  .attr('cy', function(d) { return d.y; })
+  .attr('r', 10)
+  .style('fill', 'blue')
+  .call(drag)
+
+
+setInterval(moveEnemies, 2000);
 
 
