@@ -40,33 +40,11 @@ var enemyUpdate = function(data) {
   //UPDATE
   d3enemies
   .transition()
-  .duration(1500)
-  .tween('circles', function(d) {
-    // var x = d.x;
-    // var y = d.y;
-    var enemyR = d.r;
-
-    return function() {
-      debugger;
-
-      var playerX = Number(d3.select('.player').attr('cx'));
-      var playerY = Number(d3.select('.player').attr('cy'));
-      var xDelta = Math.abs(this.__data__.x - playerX);
-      var yDelta = Math.abs(this.__data__.y - playerY);
-      var r = players[0].r + enemyR;
-      var l = Math.sqrt(Math.pow(xDelta, 2) + Math.pow(yDelta, 2));
-        // debugger;
-      if (l < r) {
-        //reset score
-        gameStats.current = 0;
-        d3.select('#num-collisions').data([gameStats.collisions])
-        .text(function(d) { return d; });
-        return gameStats.collisions++;
-      }
-    }
-  })
+  .duration(1000)
   .attr('cx', function(d) { return d.x; })
   .attr('cy', function(d) { return d.y; })
+  //call customTween
+  .tween('collision', collisionTween);
 
  
   //ENTER
@@ -81,7 +59,60 @@ var enemyUpdate = function(data) {
 
   //EXIT
   d3enemies.exit().remove();
+
+
+
 };
+
+  var checkCollision = function(enemy) {
+
+    var d3enemies = d3gameBoard.selectAll('.enemies');
+    var enemyR = d3enemies.attr('r');
+    //get this individual enemy's x and y positions
+    var enemyX = enemy.attr('cx');
+    var enemyY = enemy.attr('cy');
+
+    // get player position
+    var playerX = Number(d3.select('.player').attr('cx'));
+    var playerY = Number(d3.select('.player').attr('cy'));
+
+    //calculate distance
+    var xDelta = Math.abs(enemyX - playerX);
+    var yDelta = Math.abs(enemyY - playerY);
+    var r = players[0].r + enemyR;
+    var l = Math.sqrt(Math.pow(xDelta, 2) + Math.pow(yDelta, 2));
+    if (l < r) {
+      //reset score
+      gameStats.current = 0;
+      d3.select('#num-collisions').data([gameStats.collisions])
+      .text(function(d) { return d; });
+      
+      return gameStats.collisions++;
+    }
+  };
+
+  var collisionTween = function() {
+    //get enemy position data, current and end
+    var enemy = d3.select(this);
+    var endX = enemy[0][0].__data__.x;
+    var endY = enemy[0][0].__data__.y;
+    var startX = Number(enemy.attr('cx'));
+    var startY = Number(enemy.attr('cy'));
+
+    return function(t) {
+      
+      checkCollision(enemy);
+
+      nextX = startX + (endX - startX) * t;
+      nextY = startY + (endY - startY) * t;
+      // debugger;
+
+      enemy.attr('cx', nextX);
+      enemy.attr('cy', nextY);    
+    }
+};
+
+
 
 
 var moveEnemies = function() {
@@ -123,10 +154,14 @@ var d3Player = d3gameBoard.selectAll('.player')
   .style('fill', 'blue')
   .call(drag);
 
-setInterval(moveEnemies, 2000);
+//initialize enemies and update
+moveEnemies();
+setInterval(moveEnemies, 1000);
 
+//update high and current scores every 100ms
 setInterval(function() {
   gameStats.current++;
+
   if (gameStats.current > gameStats.high) {
     gameStats.high = gameStats.current;
     d3.select('#high-score').data([gameStats.high])
