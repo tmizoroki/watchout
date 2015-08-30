@@ -21,6 +21,7 @@ var d3gameBoard =
   .attr('width', gameOptions.width)
   .attr('height', gameOptions.height)
   .attr('class', 'gameBoard')
+  .style('border', '3px solid black')
 
 // var axes = {
 //   x : d3.scale.linear().domain([0,100]).range([0,gameOptions.width]),
@@ -28,7 +29,7 @@ var d3gameBoard =
 // };
 
 /************************************
-Enemy Behavior
+Enemy Generation, Behavior
 *************************************/
 
 //Enemy Constructor
@@ -46,6 +47,7 @@ var moveEnemies = function() {
   for (var i = 0; i < gameOptions.numEnemies; i++) {
     newEnemies.push(new Enemy(i));
   }
+  
   enemyUpdate(newEnemies);
 };
 
@@ -60,7 +62,7 @@ var enemyUpdate = function(data) {
   .duration(1000)
   .attr('x', function(d) { return d.x; })
   .attr('y', function(d) { return d.y; })
-  //call customTween
+  //Call Tween
   .tween('collision', collisionTween);
 
  
@@ -82,7 +84,7 @@ var enemyUpdate = function(data) {
 
 var checkCollision = function(enemy) {
   var d3enemies = d3gameBoard.selectAll('.enemies');
-  var enemyR = Number(d3enemies.attr('r')); //CHANGED THIS
+  var enemyR = Number(d3enemies.attr('r'));
   //get this individual enemy's x and y positions
   var enemyX = enemy.attr('x');
   var enemyY = enemy.attr('y');
@@ -92,15 +94,14 @@ var checkCollision = function(enemy) {
   var playerY = Number(d3.select('.player').attr('cy'));
 
   //calculate distance
-  var xDelta = /*Math.abs(*/enemyX - playerX/*)*/;
-  var yDelta = /*Math.abs(*/enemyY - playerY/*)*/;
+  var xDelta = enemyX - playerX;
+  var yDelta = enemyY - playerY;
   var l = Math.sqrt(Math.pow(xDelta, 2) + Math.pow(yDelta, 2));
 
   //calculate radius sum
   var r = players[0].r + enemyR;
   
   if (l < r) {
-    //reset score
     gameStats.collisionsThisInterval++;
   }
 };
@@ -108,8 +109,8 @@ var checkCollision = function(enemy) {
 var collisionTween = function() {
   //get enemy position data, current and end
   var enemy = d3.select(this);
-  var endX = enemy[0][0].__data__.x;
-  var endY = enemy[0][0].__data__.y;
+  var endX = enemy.datum().x;
+  var endY = enemy.datum().y;
   var startX = Number(enemy.attr('x'));
   var startY = Number(enemy.attr('y'));
 
@@ -119,14 +120,11 @@ var collisionTween = function() {
 
     nextX = startX + (endX - startX) * t;
     nextY = startY + (endY - startY) * t;
-    // debugger;
 
     enemy.attr('x', nextX);
     enemy.attr('y', nextY);    
   }
-
 };
-
 
 /************************************
 Player Functions and Behavior
@@ -165,7 +163,7 @@ Begin Set Intervals
 *************************************/
 
 //initialize enemies and update
-//moveEnemies();
+
 setInterval(function() {
   moveEnemies();
 
